@@ -1,7 +1,7 @@
 #!/bin/python
 
 # python version:	python 2.7.x
-# Auther:			Howlingmad-Wolfe
+# Author:			Howlingmad-Wolfe
 
 ### An attempt at implanting the RSA algorithm ###
 
