@@ -974,8 +974,7 @@ print p_test.public_key()
 
 
 #"""
-# ------------------------------------------------------
-# block() test
+# ------------------ Testing RSA class ------------------
 
 inigo = "Hello, my name is Inigo Montoya! You killed my father. Prepare to die!"
 
@@ -1031,50 +1030,4 @@ print ''
 print hello.message
 print ''
 
-#"""
-# ------------------ encyption & decyption test ------------------
-
-"""
-access = open('RSA_keys.json', 'r')
-
-access_dict = json.load(access)
-
-#print len(str(access_dict['RSA']['001']['key']))
-#print len(str(pow(2,256)))
-access.close()
-
-
-#    4 bit len ==    2
-#    8 bit len ==    3
-#   16 bit len ==    5
-#   32 bit len ==   10
-#   64 bit len ==   20
-#  128 bit len ==   39
-#  256 bit len ==   78
-#  512 bit len ==  155
-# 1024 bit len ==  309
-# 2048 bit len ==  617
-# 4096 bit len == 1234
-# --------------------------------------------------------
-
-
-rand = os.urandom( 256 ).encode( 'hex' )
-
-rand = int(rand, 16 )
-print rand
-print miller_rabin(rand, 65)
-
-
-
-
-print inigo.encode("hex")
-print ''
-
-inigo = int(inigo.encode("hex"), 16 )
-
-inigo = hex(inigo)
-for i in range(0,1):
-
-
-print inigo.decode('ascii')
 #"""
