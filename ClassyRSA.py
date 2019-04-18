@@ -1,11 +1,11 @@
 #!/bin/python
 
 # python version:	python 2.7.x
-# Author:			Howlingmad-Wolfe
+# Auther:			Howlingmad-Wolfe
 
 ### An attempt at implanting the RSA algorithm ###
 
-# 	________________________	Warning	________________________
+# 	________________________ Warning and Disclaimer ________________________
 
 ###			Not for use in real cryptographic aplications!	 	###
 ###		The auther will take no responsability for compromized	###
@@ -425,7 +425,7 @@ class RSA_Keys ( object ):
 		#	lock += 1
 
 		# This seems to be a standard practice for defending 
-		# against the low public exponent vulnerability.
+		# against the low public exponent vulnerability?
 		lock = 65537 
 		
 		# Generating private exponent using extended euclidean algorithm? 
@@ -471,7 +471,7 @@ class RSA_Keys ( object ):
 		phi_modulus = self.key_ring[ "phi_modulus" ]
 
 		# Generating public exponent aka "the lock"
-		lock = random.randint( 65537, 4294967296 ) # Max value == 32 bits
+		lock = random.randint( 65537, 4294967296 ) # Max value == 32 bits. This needs to be changed "randint" is not cryptographicly acceptable!
 		while coprime( phi_modulus, lock ) != True:
 			lock += 1
 
@@ -560,7 +560,7 @@ class RSA_Keys ( object ):
 ###############################################################################
 ###############################################################################
 
-class RSA( RSA_Keys ):
+class RSA():
 	"""
 	Takes a message and an RSA key (as a dictionary) and encrypts
 	or decrypts the message.
@@ -618,23 +618,30 @@ class RSA( RSA_Keys ):
 	--------------------------------------------------------
 
 	"""
-	def __init__( self, message, bit_size=2048, identifier=None, key_ring=None,\
+	def __init__( self, message, bit_size=2048, identifier=None, sessionKeys=None,\
 				 public_key_ring=None, primes=None, path=None ):
-		super( RSA, self ).__init__( bit_size, identifier, key_ring, public_key_ring, primes, path  )
+		#super( RSA, self ).__init__( bit_size, identifier, key_ring, public_key_ring, primes, path  )
 		
 		self.message = message
-		
-		if key_ring == None:
-			self.get_primes()
-			self.get_primes()
-			self.key_gen()
-			self.byte_block_len = self.key_ring[ 'modulus' ].bit_length() / 8 #- 42
+		self.bit_size = bit_size
+		self.sessionKeys = sessionKeys
+
+		if self.sessionKeys == None:
+			new_keys = RSA_Keys(bit_size)
+			new_keys.get_primes()
+			new_keys.get_primes()
+			new_keys.key_gen()
+			self.sessionKeys = new_keys.key_ring
+			self.byte_block_len = self.sessionKeys[ 'modulus' ].bit_length() / 8 #- 42 If I instead simply say that padding is minimum 88 bits (11 byts) it would make things simpler.
 			
 			print self.byte_block_len, " byte_block_len"
 			
 			self.deci_block_len = len( str( pow( 2, self.byte_block_len ) ) )
+		
 		else:
-			self.byte_block_len = self.key_ring[ 'modulus'].bit_length() / 8 #- 42
+			self.sessionKeys = sessionKeys
+			
+			self.byte_block_len = self.sessionKeys[ 'modulus'].bit_length() / 8 #- 42
 			
 			print self.byte_block_len, " byte_block_len"
 			
@@ -643,7 +650,7 @@ class RSA( RSA_Keys ):
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	def __repr__( self ):
-		return "(s%, s%, s%)" % ( self.message, self.key_ring, self.message_blocks )
+		return "(s%, s%, s%)" % ( self.message, self.sessionKeys, self.message_blocks )
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------	
 	
@@ -712,7 +719,6 @@ class RSA( RSA_Keys ):
 		self.message = blocks
 		return self.message
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	def ublock( self ):
@@ -897,7 +903,7 @@ class RSA( RSA_Keys ):
 			self.blocks:	list/array
 		
 
-			self.key_ring:	dict
+			self.sessionKeys:	dict
 
 
 		--------------------------------------------------------
@@ -909,7 +915,7 @@ class RSA( RSA_Keys ):
 		secrets = []
 		
 		for b in self.message:
-			do = pow( int( b ), self.key_ring[ 'lock' ], self.key_ring[ 'modulus' ] )
+			do = pow( int( b ), self.sessionKeys[ 'lock' ], self.sessionKeys[ 'modulus' ] )
 			secrets.append( do )
 		
 		self.message = secrets
@@ -928,7 +934,7 @@ class RSA( RSA_Keys ):
 			self.blocks:	list/array
 		
 
-			self.key_ring:	dict
+			self.sessionKeys:	dict
 		
 
 		--------------------------------------------------------
@@ -940,7 +946,7 @@ class RSA( RSA_Keys ):
 		secrets = []
 		
 		for b in self.message:
-			undo = pow( b, self.key_ring[ 'key' ], self.key_ring[ 'modulus' ] )
+			undo = pow( b, self.sessionKeys[ 'key' ], self.sessionKeys[ 'modulus' ] )
 			secrets.append( str( undo ) )
 		
 		self.message = secrets
@@ -974,7 +980,8 @@ print p_test.public_key()
 
 
 #"""
-# ------------------ Testing RSA class ------------------
+# ------------------------------------------------------
+# block() test
 
 inigo = "Hello, my name is Inigo Montoya! You killed my father. Prepare to die!"
 
@@ -985,8 +992,8 @@ access.close()
 
 inigo = "Hello, my name is Inigo Montoya! You killed my father. Prepare to die!"
 
-hello = RSA( message=inigo, key_ring=access_dict[ 'RSA' ][ '00x' ] )
-#hello = RSA(message=inigo, identifier="hello")
+#hello = RSA( message=inigo, sessionKeys=access_dict[ 'RSA' ][ '00x' ] )
+hello = RSA(message=inigo)
 
 #hello.lock_key()
 
@@ -994,7 +1001,7 @@ hello = RSA( message=inigo, key_ring=access_dict[ 'RSA' ][ '00x' ] )
 print ""
 #print pow( hello.key_ring["lock"], 1, hello.key_ring["modulus"] )
 #"""
-hello.save_keys()
+#hello.save_keys()
 #print hello.public_key()
 #print''
 
@@ -1030,4 +1037,50 @@ print ''
 print hello.message
 print ''
 
+#"""
+# ------------------ encyption & decyption test ------------------
+
+"""
+access = open('RSA_keys.json', 'r')
+
+access_dict = json.load(access)
+
+#print len(str(access_dict['RSA']['001']['key']))
+#print len(str(pow(2,256)))
+access.close()
+
+
+#    4 bit len ==    2
+#    8 bit len ==    3
+#   16 bit len ==    5
+#   32 bit len ==   10
+#   64 bit len ==   20
+#  128 bit len ==   39
+#  256 bit len ==   78
+#  512 bit len ==  155
+# 1024 bit len ==  309
+# 2048 bit len ==  617
+# 4096 bit len == 1234
+# --------------------------------------------------------
+
+
+rand = os.urandom( 256 ).encode( 'hex' )
+
+rand = int(rand, 16 )
+print rand
+print miller_rabin(rand, 65)
+
+
+
+
+print inigo.encode("hex")
+print ''
+
+inigo = int(inigo.encode("hex"), 16 )
+
+inigo = hex(inigo)
+for i in range(0,1):
+
+
+print inigo.decode('ascii')
 #"""
