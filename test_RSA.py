@@ -1,6 +1,5 @@
 import unittest
 from RSA import *
-from prime_tools import *
 
 
 

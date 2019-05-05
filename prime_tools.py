@@ -50,9 +50,11 @@ def coprime( number_1, number_2 ):
 	Returns
 	--------------------------------------------------------
 		boolean
-
-	"""
-	if number_1 < number_2:
+   
+    """
+	if number_1 <= 1 or number_2 <= 1:
+		return False
+	elif number_1 < number_2:
 		a = number_2
 		b = number_1
 	else:
@@ -113,6 +115,9 @@ def fermat_prime( number, pass_no = 1 ):
 		Boolean (True or False)
 
 	"""
+	if number == 2:
+		return True
+	
 	if number < 2 or pow( number, 1, 2 ) == 0:
 		return False
 	
@@ -162,8 +167,10 @@ def miller_rabin( number , pass_no = 1 ):
 		
 	"""
 	# odd_Filtering out any values that are even or equal to 1.
-	if number <= 2:
+	if number <= 1:
 		return False
+	elif number == 2:
+		return True
 	elif pow( number, 1, 2 ) == 0:
 		return False
 	
