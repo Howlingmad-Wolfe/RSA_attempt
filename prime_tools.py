@@ -221,7 +221,7 @@ def prime(size, primeCandidate=None):
     
     while True:
         primeCandidate = preFilter(primeCandidate)
-        if miller_rabin(primeCandidate, 10)==True:
+        if miller_rabin(primeCandidate, 70)==True:
             break
         else:
             primeCandidate += 2

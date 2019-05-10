@@ -2,6 +2,9 @@ import unittest
 from prime_tools import *
 
 class TestTools(unittest.TestCase):
+    
+    
+
     def test_coprime(self):
        self.assertEqual( coprime( 2583476, 7 ), False )
        self.assertEqual( coprime( 4, 2583476 ), False )
@@ -26,30 +29,33 @@ class TestTools(unittest.TestCase):
     #    self.assertEqual( preFilter(), )
 
     def test_fermat_prime(self):
-        self.assertEqual( fermat_prime( -499 ), False )
-        self.assertEqual( fermat_prime( 0 ), False )
-        self.assertEqual( fermat_prime( 1 ), False )
-        self.assertEqual( fermat_prime( 2 ), True )
-        self.assertEqual( fermat_prime( 499 ), True )
-        self.assertEqual( fermat_prime( 2579 ), True )
-        #self.assertEqual( fermat_prime( 561 ), True) # This is a carmichael number and, therefor, not prime
-        self.assertEqual( fermat_prime( 2136 ), False )
-        self.assertEqual( fermat_prime( 13415 ), False )
-        self.assertEqual( fermat_prime( 29341 ), True) # This is a carmichael number and, therefor, not prime
+        passes = 30 # certen functions in prime_tools.py will conduct a test specified number of times.
+        self.assertEqual( fermat_prime( -499, passes ), False )
+        self.assertEqual( fermat_prime( 0, passes ), False )
+        self.assertEqual( fermat_prime( 1, passes ), False )
+        self.assertEqual( fermat_prime( 2, passes ), True )
+        self.assertEqual( fermat_prime( 499, passes ), True )
+        self.assertEqual( fermat_prime( 2579, passes ), True )
+        #self.assertEqual( fermat_prime( 561, passes ), True) # 561 is a carmichael number and a not prime but it should fool the fermat test.
+        self.assertEqual( fermat_prime( 2136, passes ), False )
+        self.assertEqual( fermat_prime( 13415, passes ), False )
+        #self.assertEqual( fermat_prime( 29341, passes ), True) # 29341 is a carmichael number and a not prime but it should fool the fermat test.
 
     def test_miller_rabin(self):
-        self.assertEqual( miller_rabin(-499), False )
-        self.assertEqual( miller_rabin(0), False )
-        self.assertEqual( miller_rabin(1), False )
-        self.assertEqual( miller_rabin(2), True )
-        self.assertEqual( miller_rabin(499), True )
-        self.assertEqual( miller_rabin( 2579 ), True )
-        self.assertEqual( miller_rabin( 561 ), False )
-        self.assertEqual( miller_rabin( 2136 ), False )
-        self.assertEqual( miller_rabin( 13415 ), False )
-        self.assertEqual( miller_rabin( 29341 ), False )
+        passes = 30 # certen functions in prime_tools.py will conduct a test specified number of times.
+        self.assertEqual( miller_rabin(-499, passes), False )
+        self.assertEqual( miller_rabin(0, passes), False )
+        self.assertEqual( miller_rabin(1, passes), False )
+        self.assertEqual( miller_rabin(2, passes), True )
+        self.assertEqual( miller_rabin(499, passes), True )
+        self.assertEqual( miller_rabin( 2579, passes ), True )
+        self.assertEqual( miller_rabin( 561, passes ), False )# 561 is a carmichael number and not a prime. It shouldn't fool the miller_rabin test
+        self.assertEqual( miller_rabin( 2136, passes ), False )
+        self.assertEqual( miller_rabin( 13415, passes ), False )
+        self.assertEqual( miller_rabin( 29341, passes ), False )# 29341 is a carmichael number and not a prime. It shouldn't fool the miller_rabin test
 
-    #def test_prime(self):
+    def test_prime(self):
+        self.assertEqual( prime(0,40425,), 40427 )
     #    self.assertEqual( prime(), )
     #    self.assertEqual( prime(), )
     #    self.assertEqual( prime(), )
@@ -58,8 +64,6 @@ class TestTools(unittest.TestCase):
     #    self.assertEqual( prime(), )
     #    self.assertEqual( prime(), )
     #    self.assertEqual( prime(), )
-    #    self.assertEqual( prime(), )
-
 
 if __name__ == '__main__':
     unittest.main()
