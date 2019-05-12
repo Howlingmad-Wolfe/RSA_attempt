@@ -1,5 +1,9 @@
 import unittest
+import os
+import json
+
 from prime_tools import *
+from search import *
 
 class TestTools(unittest.TestCase):
     
@@ -54,16 +58,20 @@ class TestTools(unittest.TestCase):
         self.assertEqual( miller_rabin( 13415, passes ), False )
         self.assertEqual( miller_rabin( 29341, passes ), False )# 29341 is a carmichael number and not a prime. It shouldn't fool the miller_rabin test
 
+
     def test_prime(self):
         self.assertEqual( prime(0,40425,), 40427 )
-    #    self.assertEqual( prime(), )
-    #    self.assertEqual( prime(), )
-    #    self.assertEqual( prime(), )
-    #    self.assertEqual( prime(), )
-    #    self.assertEqual( prime(), )
-    #    self.assertEqual( prime(), )
-    #    self.assertEqual( prime(), )
-    #    self.assertEqual( prime(), )
+        
+        for i in range(10):
+            testNumb = prime(3)
+            print "I propose that %d is prime" %(testNumb)
+            primeFile = open("%s\prime_pool\%s" %(os.getcwd(),findFile(testNumb)), 'r')
+            numbRange = json.load(primeFile)
+            primes = SearchTree(numbRange)
+            primeFile.close()
+            self.assertEqual(testNumb, primes.search(testNumb))
+
+
 
 if __name__ == '__main__':
     unittest.main()
