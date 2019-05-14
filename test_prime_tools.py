@@ -22,15 +22,14 @@ class TestTools(unittest.TestCase):
        self.assertEqual( coprime(17685743, 1), False )
 
 
-    #def test_preFilter(self):
-    #    self.assertEqual( preFilter(), )
-    #    self.assertEqual( preFilter(), )
-    #    self.assertEqual( preFilter(), )
-    #    self.assertEqual( preFilter(), )
-    #    self.assertEqual( preFilter(), )
-    #    self.assertEqual( preFilter(), )
-    #    self.assertEqual( preFilter(), )
-    #    self.assertEqual( preFilter(), )
+    def test_preFilter(self):
+        for iterations in range(10):
+            primer = int(os.urandom(3).encode("hex"), 16)
+            testnumber = preFilter(primer)
+            
+            for i in range(2,100):
+                self.assertEqual( pow( testnumber, 1, i ) == 0 , False )
+
 
     def test_fermat_prime(self):
         passes = 30 # certen functions in prime_tools.py will conduct a test specified number of times.
@@ -40,13 +39,14 @@ class TestTools(unittest.TestCase):
         self.assertEqual( fermat_prime( 2, passes ), True )
         self.assertEqual( fermat_prime( 499, passes ), True )
         self.assertEqual( fermat_prime( 2579, passes ), True )
-        #self.assertEqual( fermat_prime( 561, passes ), True) # 561 is a carmichael number and a not prime but it should fool the fermat test.
+        #self.assertEqual( fermat_prime( 561, passes ), True) # 561 is a carmichael number and a not prime but it should fool the fermat test. 
         self.assertEqual( fermat_prime( 2136, passes ), False )
         self.assertEqual( fermat_prime( 13415, passes ), False )
         #self.assertEqual( fermat_prime( 29341, passes ), True) # 29341 is a carmichael number and a not prime but it should fool the fermat test.
 
+
     def test_miller_rabin(self):
-        passes = 30 # certen functions in prime_tools.py will conduct a test specified number of times.
+        passes = 30 # certain functions in prime_tools.py will conduct a test a specified number of times.
         self.assertEqual( miller_rabin(-499, passes), False )
         self.assertEqual( miller_rabin(0, passes), False )
         self.assertEqual( miller_rabin(1, passes), False )
@@ -60,11 +60,20 @@ class TestTools(unittest.TestCase):
 
 
     def test_prime(self):
-        self.assertEqual( prime(0,40425,), 40427 )
         
-        for i in range(10):
-            testNumb = prime(3)
-            print "I propose that %d is prime" %(testNumb)
+        for i in range(10): # Demonstrating using a seen integer
+            primer = int(os.urandom(3).encode("hex"), 16)   # seed int
+            testNumb = prime(0,primer) # no size given only seed int
+            
+            primeFile = open("%s\prime_pool\%s" %(os.getcwd(),findFile(testNumb)), 'r')
+            numbRange = json.load(primeFile)
+            primes = SearchTree(numbRange)
+            primeFile.close()
+            self.assertEqual(testNumb, primes.search(testNumb))
+
+        for i in range(10): # Getting a random prime number with a size of up to X bytes long.
+            testNumb = prime(3) # No seed int given only size.
+            
             primeFile = open("%s\prime_pool\%s" %(os.getcwd(),findFile(testNumb)), 'r')
             numbRange = json.load(primeFile)
             primes = SearchTree(numbRange)
