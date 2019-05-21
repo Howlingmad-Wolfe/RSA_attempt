@@ -61,7 +61,7 @@ class TestTools(unittest.TestCase):
 
     def test_prime(self):
         
-        for i in range(10): # Demonstrating using a seen integer
+        for i in range(10): # Demonstrating using passing a candidate int to prime()
             primer = int(os.urandom(3).encode("hex"), 16)   # seed int
             testNumb = prime(0,primer) # no size given only seed int
             
@@ -72,7 +72,7 @@ class TestTools(unittest.TestCase):
             self.assertEqual(testNumb, primes.search(testNumb))
 
         for i in range(10): # Getting a random prime number with a size of up to X bytes long.
-            testNumb = prime(3) # No seed int given only size.
+            testNumb = prime(3) # no candidate int given only size.
             
             primeFile = open("%s\prime_pool\%s" %(os.getcwd(),findFile(testNumb)), 'r')
             numbRange = json.load(primeFile)

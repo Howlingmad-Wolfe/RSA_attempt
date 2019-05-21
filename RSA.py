@@ -40,8 +40,8 @@ class RSA_Key ( object ):
             PRIME1 = prime(sizePrime)
             PRIME2 = prime(sizePrime)
             self.modulus = PRIME1 * PRIME2
-            self.phiModulus = (PRIME1 - 1)*(PRIME2 - 1)          
-            self.pubEx = int(os.urandom(3).encode("hex"),16)           
+            self.phiModulus = (PRIME1 - 1)*(PRIME2 - 1)
+            self.pubEx = int(os.urandom(3).encode("hex"),16)
             
             while coprime(self.phiModulus, self.pubEx) != True:
                 self.pubEx += 1 
@@ -57,6 +57,9 @@ class RSA_Key ( object ):
             self.phiModulus = phiModulus
             self.pubEx = pubEx
             self.secretEx = secretEx
+
+        self.prime_a = PRIME1
+        self.prime_b = PRIME2
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
