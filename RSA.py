@@ -17,6 +17,7 @@
 # ------------------ Imported Modules ------------------
 import os
 from prime_tools import *
+from math import floor as floor
 
 ###############################################################################
 ###############################################################################
@@ -24,6 +25,7 @@ from prime_tools import *
 
 class RSA_Key ( object ):
     """
+    Key object for RSA cryptography. Self generates if called with no args or if only sizeModulus is given.
     """
     PRIME1 = 0
     PRIME2 = 0
@@ -57,7 +59,8 @@ class RSA_Key ( object ):
             self.phiModulus = phiModulus
             self.pubEx = pubEx
             self.secretEx = secretEx
-
+        
+        # The following variables are for testing purposes
         self.prime_a = PRIME1
         self.prime_b = PRIME2
 
@@ -79,42 +82,98 @@ class RSA_Key ( object ):
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def hash(self, data):
+        """ Adds at least 88 bits (11 bytes) of random data and removal tage to data then encrypts it """
 
         if len(str(data)) > len(str(self.modulus)):
             print "error | block is too big. Cannot hash without data loss."
         else:
-            try:
-                pad_len = self.modulus.bit_length() - data.bit_length()
-                data = data << pad_len
-                if self.modulus < data:
-                    data = data >> 1
-                    pad_len -= 1
-                padding = int(os.urandom( (pad_len/8) - 2).encode('hex'),16)
-                padding = padding << 16 #This and the 2 in the preceding line are "magic numbers". Need to make non-arbatrary! Was pad_len.bit_length()
-                padding = padding | pad_len
-                package = data | padding
+            #try:
+            pad_len = self.modulus.bit_length() - data.bit_length()
+            data <<= pad_len
+            if self.modulus < data:
+                data >>= 1
+                pad_len -= 1
+            padding = int(os.urandom( (pad_len/8) - 2).encode('hex'),16)
+            tag_len = self.modulus.bit_length()
+            tag_len = tag_len.bit_length()
+            padding <<= tag_len 
+            padding = padding | pad_len
+            package = data | padding
 
-                return pow(package,self.pubEx,self.modulus)
+            return pow(package,self.pubEx,self.modulus)
 
-            except TypeError:
-                print "error | NULL data or bad data type!"
+            #except TypeError:
+            #    print "error | NULL data or bad data type!"
+
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def unhash(self, data):
-
-        try:
-            package = pow(data,self.secretEx,self.modulus)
-            binary = str(bin(package))
-            pad_len = ""
-            for bit in range(len(binary)-1, len(binary)-16, -1):
-                pad_len = binary[bit] + pad_len
+        """
+        decrypt message
+        calculate length of padding removal tag based on the size of modulus.
+        data_1 = data >> tag length, data_2 = data << tag length, data_1 ^ data_2 = tag.
+        data >> tag = message!
+        """
+      
+        package = pow(data, self.secretEx, self.modulus)
+        tag_size = self.modulus.bit_length().bit_length()
+        cancel = package >> tag_size
+        cancel <<= tag_size
+        tag = package ^ cancel
+        package >>= tag
             
-            pad_len = int(pad_len, 2)
-            package = package >> pad_len
-            
-            return package
+        return package
 
-        except TypeError:
-            print "error | NULL data or bad data type!"
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------        
+    def make_blocks(self, data, data_len=None, shift=None, blocks=None):
+        """ (recursive function) Brakes data into chunks small enough to be encrypted and recovered by the key """
+        if blocks == None:       
+            blocks = []
+        if shift == None:
+            shift = 0
+        if data_len == None:
+            data_len = data.bit_length()
+
+        target = self.modulus.bit_length()
+        tag = int(floor( data_len / ( target / 2 ) ) * ( target / 2 ))
+        overhead = target - tag.bit_length()
+
+        WorkingShift = int(floor(data.bit_length()/2))
+        first = data >> WorkingShift
+        second = first << WorkingShift
+        second = data ^ second
+        
+        if first.bit_length() >= overhead or second.bit_length() >= overhead:
+            for i in self.make_blocks(first, data_len, WorkingShift + shift):
+                blocks.append(i)
+            for i in self.make_blocks(second, data_len, shift):
+                blocks.append(i)
+        else:
+            first = first << tag.bit_length()
+            first = first ^ (shift + WorkingShift)
+            blocks.append(first)
+            second = second << tag.bit_length()
+            second = second ^ shift
+            blocks.append(second)
+
+        return blocks
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    def assemble_blocks(self, data):
+        """ Assembles chunks of data back into the original data """
+        assembled_message = 0
+        tag_size = self.modulus.bit_length()/2 * len(data)
+        proto_tag = tag_size.bit_length()
+
+        for block in data:
+            clean_block = block >> proto_tag
+            mask = clean_block << proto_tag
+            tag = block ^ mask
+            block = clean_block << tag
+            assembled_message |= block
+
+        return assembled_message
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------
