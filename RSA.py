@@ -81,53 +81,8 @@ class RSA_Key ( object ):
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    def hash(self, data):
-        """ Adds at least 88 bits (11 bytes) of random data and removal tage to data then encrypts it """
-
-        if len(str(data)) > len(str(self.modulus)):
-            print "error | block is too big. Cannot hash without data loss."
-        else:
-            #try:
-            pad_len = self.modulus.bit_length() - data.bit_length()
-            data <<= pad_len
-            if self.modulus < data:
-                data >>= 1
-                pad_len -= 1
-            padding = int(os.urandom( (pad_len/8) - 2).encode('hex'),16)
-            tag_len = self.modulus.bit_length()
-            tag_len = tag_len.bit_length()
-            padding <<= tag_len 
-            padding = padding | pad_len
-            package = data | padding
-
-            return pow(package,self.pubEx,self.modulus)
-
-            #except TypeError:
-            #    print "error | NULL data or bad data type!"
-
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    def unhash(self, data):
-        """
-        decrypt message
-        calculate length of padding removal tag based on the size of modulus.
-        data_1 = data >> tag length, data_2 = data << tag length, data_1 ^ data_2 = tag.
-        data >> tag = message!
-        """
-      
-        package = pow(data, self.secretEx, self.modulus)
-        tag_size = self.modulus.bit_length().bit_length()
-        cancel = package >> tag_size
-        cancel <<= tag_size
-        tag = package ^ cancel
-        package >>= tag
-            
-        return package
-
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
     def make_blocks(self, data, data_len=None, shift=None, blocks=None):
-        """ (recursive function) Brakes data into chunks small enough to be encrypted and recovered by the key """
+        """ (recursive function) Brakes data into chunks small enough to be encrypted and recovered by the key. Takes int, returns list """
         if blocks == None:       
             blocks = []
         if shift == None:
@@ -160,9 +115,9 @@ class RSA_Key ( object ):
         return blocks
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+    
     def assemble_blocks(self, data):
-        """ Assembles chunks of data back into the original data """
+        """ Assembles chunks of data back into the original data. Takes list returns int """
         assembled_message = 0
         tag_size = self.modulus.bit_length()/2 * len(data)
         proto_tag = tag_size.bit_length()
@@ -177,3 +132,56 @@ class RSA_Key ( object ):
         return assembled_message
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    def hash(self, data):
+        """ 
+        Adds at least 88 bits (11 bytes) of random data and removal tage to data then encrypts it. 
+        Takes int. returns int or list.
+        """
+
+        if len(str(data)) > len(str(self.modulus)):
+            block = self.make_blocks(data)
+            for i in block:
+                self.hash(i)
+            return block
+
+        else:
+            #try:
+            pad_len = self.modulus.bit_length() - data.bit_length()
+            data <<= pad_len
+            if self.modulus < data:
+                data >>= 1
+                pad_len -= 1
+            padding = int(os.urandom( (pad_len/8) - 2).encode('hex'),16)
+            tag_len = self.modulus.bit_length()
+            tag_len = tag_len.bit_length()
+            padding <<= tag_len 
+            padding = padding | pad_len
+            package = data | padding
+
+            return pow(package,self.pubEx,self.modulus)
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    def unhash(self, data):
+        """
+        decrypt message
+        calculate length of padding removal tag based on the size of modulus.
+        data_1 = data >> tag length, data_2 = data << tag length, data_1 ^ data_2 = tag.
+        data >> tag = message!
+
+        Takes int or list and returns int.
+        """
+        if type(data) == list:
+            for i in data:
+                i = self.unhash(i)
+            package = self.assemble_blocks(data)
+        else:
+            package = pow(data, self.secretEx, self.modulus)
+            tag_size = self.modulus.bit_length().bit_length()
+            cancel = package >> tag_size
+            cancel <<= tag_size
+            tag = package ^ cancel
+            package >>= tag
+            
+        return package

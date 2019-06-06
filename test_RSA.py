@@ -50,6 +50,7 @@ class TestRSA(unittest.TestCase):
         #self.assertEqual(len( str( hashed_sim_AES256_key ) ), len( str ( self.test_RSA_key.modulus ) ) ) # checking if hashed message is approx. the length of modulus
         self.assertEqual( self.test_RSA_key.unhash( hashed_sim_AES256_key ), sim_AES256_key ) # unhashed message should be the same as cleartext message.
 
+
     def test_large_Hash_Unhash(self):
 
         data_larger_than_modulus = int(os.urandom(1024).encode("hex"), 16)
@@ -73,8 +74,14 @@ class TestRSA(unittest.TestCase):
         self.assertEqual(assembled_large_data, data_larger_than_modulus)
 
 
-        
+    def test_hash_again(self):
 
+        data_larger_than_modulus = int(os.urandom(1024).encode("hex"), 16)
+        blocks_of_hashed_data = self.test_RSA_key.hash(data_larger_than_modulus)
+        self.assertEqual(type(blocks_of_hashed_data), list)
+        self.assertEqual(blocks_of_hashed_data == data_larger_than_modulus, False)
+        blocks_of_unhashed_data = self.test_RSA_key.unhash(blocks_of_hashed_data)
+        self.assertEqual(blocks_of_unhashed_data, data_larger_than_modulus)
 
 
 if __name__ == '__main__':
